@@ -5,7 +5,7 @@ Understanding complex demographic histories in _Astyanax mexicanus_ cavefish wit
 -------------------------------------------------------------------------------------------------------------------
 ## Pipeline for fastsimcoal2  
 
-### Step 1: Generate joint site frequency spectra (SFS) of derived alleles from population genomic data
+### Generate joint site frequency spectra (SFS) of derived alleles from population genomic data
 
 **Necessary input:** VCF file containing SNPs and invariant sites genome-wide for populations of interest and at least one individual from an outgroup species (needed to identify the ancestral state for each position in the genome). This VCF should be filtered down, removing regions containing indels and repetitive regions. We will require full genotype coverage in each population being compared when generating the SFS, so this filtering does not need to be done in advance. 
 
@@ -50,4 +50,9 @@ my %pop2n = (
     'CMS' => 12, 'CMsurface' => 12,
 );
 ```
+
+### Demographic modeling
+
+
+
 
