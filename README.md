@@ -53,7 +53,7 @@ my %pop2n = (
 
 ### Demographic modeling
 
-
-![](/fastsimoal2_models/CoalescentTopologies.svg)
+All coalescent topologies modeled and key for populations, events, and gene flow regimes
+![](/fastsimoal2_models/CoalescentTopologies.png)
 
 
