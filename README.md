@@ -82,7 +82,7 @@ Additionally, this script can also be used to collate the data from all 100 inde
 #doComputations=0
 doComputations=1
 ```
-This will produce a file `*_bestLhoodsParams.txt` containing the output for all 100 runs of the model (or however many you ran).  
+This will produce a file `*_bestLhoodsParams.txt` containing the output for all 100 runs of the model (or however many you ran).   
 _Note:_ if submitting runs or collating data for many different demographic models within the same directory, ensure that each demographic model and all input files corresponding to that model have a consistent, unique prefix: e.g., `[prefix].tpl` + `[prefix].est` ... etc. The script will work by prefix to submit 100 runs for each model or collate data from those runs for each model separately based on prefix. 
 
 `get_AIC_byrun.pl` --> calculate AIC from the maximum observed likelihood achieved in each run of fsc for all models tested. The output looks like this:  
