@@ -34,7 +34,7 @@ POPS=(CMsurface CMeyed CMcave)
 
 The output of this step is a SFS in a one line format, followed by a second line of 0 and 1 values indicating whether the site should be masked from further analyses (1 = masked, 0 = no mask, _note masking can be changed within the script_). This format can be used for analysis with dadi. For analysis with fastsimcoal2 we convert this oneline format to a matrix using `SFS_oneline2matrix.pl`
 
-For conversion to matrix format compatible with fastsimcoal2 you will need to specify a population index (n populations numbered 0-n consistent through all analyses, _see fsc2 documentation_) and the <ins>haploid</ins> sample size of each population from the VCF. 
+For conversion to matrix format compatible with fastsimcoal2 you will need to specify a population index (n populations numbered 0 to n-1 consistent through all analyses, _see fsc2 documentation_) and the <ins>haploid</ins> sample size of each population from the VCF. 
 
 `SFS_oneline2matrix.pl` line 6:
 ```
@@ -53,6 +53,6 @@ my %pop2n = (
 
 ### Demographic modeling
 
-
+[All coalescent topologies modeled and key for populations, events, and gene flow regimes](CoalescentTopologies.svg)
 
 
