@@ -1,0 +1,18 @@
+// Estimation file
+
+[PARAMETERS]
+// isInt?   name       distr    min       max        [modifier]
+1          N_CMC       unif     1e3       2e5        output
+1          N_CME       unif     1e3       2e5        output
+1          N_CMS       unif     2e5       2e6        output
+1          N_GHOST     unif     2e5       2e6        hide
+0          MIG_C2E     logunif  1e-8      1e-2       output
+0          MIG_E2C     logunif  1e-8      1e-2       output
+1          DIV13       unif     100       1e5        output
+1          DIV02       unif     DIV13     6e5        output paramInRange
+1          DIV32       unif     DIV02     1e6        output paramInRange
+0          ANC_RESIZE  unif     0.1       5          hide   bounded
+0          A02_RESIZE  unif     0.1       5          hide   bounded
+0          A13_RESIZE  unif     0.1       5          hide   bounded
+
+[COMPLEX PARAMETERS]
