@@ -64,7 +64,7 @@ my %pop2n = (
 *.est
 ```  
 
-`*.obs` files are produced in the previous step: _Generate joint site frequency spectra (SFS) of derived alleles from population genomic data_. See examples: `/fastsimcoal2_models/example_jointDAFpop*.obs`
+`*.obs` files are produced in the previous step: _Generate joint site frequency spectra (SFS) of derived alleles from population genomic data_. See examples: `/fastsimcoal2_models/CabMoro_jointDAFpop*.obs`
 
 Each demographic model (i.e., each combination of coalescent topology, historical events, and applicable gene flow regime) is specified in the `*.tpl` file.   
 
@@ -82,7 +82,8 @@ Additionally, this script can also be used to collate the data from all 100 inde
 #doComputations=0
 doComputations=1
 ```
-This will produce a file `*_bestLhoodsParams.txt` containing the output for all 100 runs of the model (or however many you ran).   
+This will produce a file `*_bestLhoodsParams.txt` containing the output for all 100 runs of the model (or however many you ran).  
+
 _Note:_ if submitting runs or collating data for many different demographic models within the same directory, ensure that each demographic model and all input files corresponding to that model have a consistent, unique prefix: e.g., `[prefix].tpl` + `[prefix].est` ... etc. The script will work by prefix to submit 100 runs for each model or collate data from those runs for each model separately based on prefix. 
 
 `get_AIC_byrun.pl` --> calculate AIC from the maximum observed likelihood achieved in each run of fsc for all models tested. The output looks like this:  
@@ -95,3 +96,82 @@ run#    model-01    model-02    model-03
 _Note:_ The script is able to intuitively calculate k (the number of free parameters) in each model from the .est file, so be sure to have a copy of the .est file for each model tested in the directory. 
 
 `Akaike_Weights.R` --> convert the AIC values into an Akaike weight for each overall model. The Akaike weight serves as a value that can be directly interpreted as the conditional probability for each model. In other words, the Akaike weight reflects the probability that the given demographic model best replicates the observed SFS among the models tested. 
+
+## Custom Dadi package for cavefish
+Coalescent demographic modeling based on derived allele site frequency spectra from whole genome sequencing  
+This custom python package is an extension of the work of Tom Kono, _see:_ https://github.com/TomJKono/CaveFish_Demography/wiki
+
+In order to function, the package must remain in this layout:
+``` 
+cavefish_dadi/
+├── Models/
+│   ├── __init__.py
+│   ├── demo_model.py
+│   ├── si.py
+│   ├── im.py
+│   ├── am.py
+│   ├── sc.py
+│   ├── im2m.py
+│   ├── am2m.py
+│   └── sc2m.py
+├── Optim/
+│   ├── __init__.py
+│   └── dadi_custom.py
+└── Support/
+    ├── __init__.py
+    ├── arguments.py
+    └── module_test.py
+```
+
+The package is initiated by running `SEM_CaveFish_Dadi.py`
+```
+usage: SEM_CaveFish_Dadi.py [-h] -f SFS -m {SI,SC,AM,IM,SC2M,AM2M,IM2M} -p POP
+                            [-o OUT] [-n NITER] [-r REPLICATES] -l LENGTH
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f SFS, --sfs SFS     Joint SFS file, in dadi format
+  -m {SI,SC,AM,IM,SC2M,AM2M,IM2M}, --model {SI,SC,AM,IM,SC2M,AM2M,IM2M}
+                        Specify a model to run. May be specified multiple
+                        times, with different models.
+  -p POP, --pop POP     Population labels. Must be specified in order that
+                        they are listed in dadi SFS file.
+  -o OUT, --out OUT     Output prefix for results files. Defaults to
+                        CaveFish_Dadi_Out
+  -n NITER, --niter NITER
+                        Number of iterations for the simulated annealing.
+  -r REPLICATES, --replicates REPLICATES
+                        Number of replicates to perform for each model.
+  -l LENGTH, --length LENGTH
+                        Length of the locus. Note that this is the size of
+                        region, including invariant sites, that was used to
+                        generate the SFS.
+```
+
+For running many replicates on a HPC, I recommend first putting together a file of all commands, _see_ `ALL_dadi_commands.txt`. Then you can split that master file into chunks _see_  `chunk_744.txt` and submit the chunks to the scheduler to make best use of available resources with `run_dadi_chunked.sh` 
+
+How to split a master file into manageable chunks:  
+
+Master file (ALL_dadi_commands.txt) has 5250 commands (5250 lines)  
+Each of the 7 models has 50 replicates (to derive parameter estimates across many runs)  
+So we split the master file into 750 chunks, each containing 1 replicate (1 run of each model)  
+
+```
+split -d -a 3 -l 7 ALL_dadi_commands.txt chunk_
+```
+
+`-l 7` = 7 lines per chunk  
+`-d` = numeric suffixes  
+`-a 3` = 3 digits (000 … 749)  
+`chunk_` = prefix, so outputs chunk_000, chunk_001, … chunk_749    
+
+Scripts for collating results and calculating stats can be found in `/dadi/results_and_stats/`  
+
+The following table highlights the major differences in package function from previous iterations of the models
+
+| Change Made | Description |
+| --- | --- |
+| Use of 2 ancestral samples | The code now considers 2+ genotypes when estimating the ancestral allele. Sites are excluded from the 2D SFS if they are heterozygous (i.e., 0/1) in the outgroup or if there was not a consensus between outgroup individuals, given that we cannot determine which allele is the ancestral state at these sites. |
+| Removed mask on sites at frequency of 0.5 in both populations  | Prior to generating the SFS we removed sites from the VCF that were heterozygous (i.e., 0/1) in every single individual sampled, as these likely represent paralogous alignment from the ancient teleost genome duplication rather than true heterozygous sequence variants. However, the previous version of the script ALSO masked all sites in the SFS that had a frequency of 0.5 in both populations. I removed the mask over these sites because we already removed these potential paralogous sites, and sites can have a population frequency of 0.5 from other genotype combinations (e.g. if half the individuals are 0/0 and half are 1/1) so these sites could be informative to the demographic model |
+| Mutation rate | Updated the mutation rate from 3e-9 to 5.62e-9 per the estimated mutation rate of more closely related fish species (common carp from "Evolution of the germline mutation rate across vertebrates" Bergeron et al 2023 in Nature) |
+| Calculation of median total divergence time | For the SC2M model, the 2018 analysis calculates median total divergence time as (medain Ts) + (median Tsc). I changed this to calculate Ts + Tsc in each of the 50 reps individually first, then take median(Ts+Tsc) _Note: SC2M is used as an example here, but this method should be followed for all mean estimates of parameters derived from other parameters in the model (eg., mean x+y or mean z-a)_ |
